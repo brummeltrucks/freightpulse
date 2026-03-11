@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: brummel-freightpulse
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: GEMINI_KEY
+        value: AIzaSyAmbYYXK7USu-TqvAtrQeRxMlJuYxHUb_c
+      - key: EIA_KEY
+        value: DEMO_KEY
+      - key: NODE_ENV
+        value: production

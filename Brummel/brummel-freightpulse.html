@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRUMMEL FREIGHTPULSE</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1a7fd4;
+    --blue-bright: #2d9cff;
+    --blue-dim: #0d4a7a;
+    --bg: #050a10;
+    --bg2: #080f18;
+    --bg3: #0c1825;
+    --panel: #0a1520;
+    --panel2: #0e1e2e;
+    --border: #1a3a5c;
+    --border2: #0f2840;
+    --text: #c8dff0;
+    --text-dim: #5a8ab0;
+    --text-bright: #e8f4ff;
+    --green: #00e5a0;
+    --green-dim: #006644;
+    --red: #ff4444;
+    --red-dim: #660000;
+    --yellow: #ffd600;
+    --orange: #ff8c00;
+    --ticker-speed: 35s;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 10% 20%, rgba(26,127,212,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 80%, rgba(26,127,212,0.03) 0%, transparent 50%);
+  }
+
+  /* SCANLINE overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #060e18 0%, #0a1828 100%);
+    border-bottom: 1px solid var(--blue-dim);
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue), var(--blue-bright), var(--blue), transparent);
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px rgba(45,156,255,0.5));
+  }
+  .brand-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--text-bright);
+    text-transform: uppercase;
+  }
+  .brand-name span {
+    color: var(--blue-bright);
+  }
+  .brand-sub {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,229,160,0.1);
+    border: 1px solid var(--green);
+    border-radius: 3px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--green);
+    text-transform: uppercase;
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-green 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--green); }
+    50% { opacity: 0.4; box-shadow: none; }
+  }
+
+  .clock {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 22px;
+    color: var(--blue-bright);
+    text-shadow: 0 0 10px rgba(45,156,255,0.5);
+    letter-spacing: 2px;
+  }
+  .clock-date {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  /* ─── TICKER ─── */
+  .ticker-bar {
+    background: linear-gradient(90deg, var(--blue-dim), #0a1e32, var(--blue-dim));
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    overflow: hidden;
+    height: 32px;
+    display: flex;
+    align-items: center;
+  }
+  .ticker-label {
+    background: var(--blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    padding: 0 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    z-index: 2;
+  }
+  .ticker-track {
+    display: flex;
+    animation: ticker-scroll var(--ticker-speed) linear infinite;
+    white-space: nowrap;
+  }
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 28px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .ticker-item .label { color: var(--text-dim); font-size: 10px; }
+  .ticker-item .val { color: var(--text-bright); font-weight: 600; }
+  .ticker-item .up { color: var(--green); }
+  .ticker-item .down { color: var(--red); }
+  .ticker-sep { color: var(--border); padding: 0 4px; }
+  @keyframes ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ─── MAIN GRID ─── */
+  .main {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    grid-template-rows: auto auto auto;
+    gap: 14px;
+  }
+
+  /* ─── PANELS ─── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue-dim), var(--blue), var(--blue-dim), transparent);
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px 8px;
+    border-bottom: 1px solid var(--border2);
+  }
+  .panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--blue-bright);
+    text-transform: uppercase;
+  }
+  .panel-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .panel-body { padding: 12px 14px; }
+
+  /* ─── DIESEL PANEL ─── */
+  .diesel-panel { grid-column: 1; grid-row: 1 / 3; }
+
+  .state-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(26,58,92,0.4);
+    font-size: 13px;
+    transition: background 0.2s;
+  }
+  .state-row:hover { background: rgba(26,127,212,0.05); border-radius: 3px; }
+  .state-row:last-child { border-bottom: none; }
+  .state-code {
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--text-bright);
+    width: 36px;
+  }
+  .state-name {
+    color: var(--text-dim);
+    font-size: 11px;
+    flex: 1;
+    padding-left: 4px;
+  }
+  .state-price {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+    min-width: 52px;
+    text-align: right;
+  }
+  .state-change {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    min-width: 40px;
+    text-align: right;
+    padding-left: 6px;
+  }
+  .cheapest-badge {
+    display: inline-block;
+    background: rgba(0,229,160,0.15);
+    color: var(--green);
+    border: 1px solid var(--green-dim);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .diesel-hero {
+    background: linear-gradient(135deg, rgba(26,127,212,0.08), rgba(0,229,160,0.05));
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .diesel-hero-label { font-size: 10px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; }
+  .diesel-hero-state { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: var(--green); letter-spacing: 2px; }
+  .diesel-hero-price { font-family: 'Share Tech Mono', monospace; font-size: 32px; color: var(--text-bright); }
+  .diesel-hero-sub { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ─── RATES PANEL ─── */
+  .rates-panel { grid-column: 2; grid-row: 1; }
+
+  .rate-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .rate-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .rate-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .rate-card.reefer::after { background: linear-gradient(90deg, var(--blue), var(--blue-bright)); }
+  .rate-card.dryvan::after { background: linear-gradient(90deg, var(--orange), #ffd600); }
+  .rate-card.flatbed::after { background: linear-gradient(90deg, var(--green), #00b874); }
+
+  .rate-type {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .rate-card.reefer .rate-type { color: var(--blue-bright); }
+  .rate-card.dryvan .rate-type { color: var(--orange); }
+  .rate-card.flatbed .rate-type { color: var(--green); }
+
+  .rate-main {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 30px;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+  .rate-unit { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+  .rate-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .rate-stat { font-size: 10px; }
+  .rate-stat-label { color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; }
+  .rate-stat-val { font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--text-bright); }
+  .rate-stat-val.up { color: var(--green); }
+  .rate-stat-val.down { color: var(--red); }
+
+  .best-state-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border2);
+    font-size: 11px;
+  }
+  .best-state-label { color: var(--text-dim); letter-spacing: 1px; }
+  .best-state-val { font-weight: 700; font-size: 12px; }
+  .rate-card.reefer .best-state-val { color: var(--blue-bright); }
+  .rate-card.dryvan .best-state-val { color: var(--orange); }
+  .rate-card.flatbed .best-state-val { color: var(--green); }
+
+  /* ─── MARKET MAP PANEL ─── */
+  .map-panel { grid-column: 2; grid-row: 2; }
+
+  .state-heatmap {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    padding: 4px 0;
+  }
+  .heat-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    position: relative;
+  }
+  .heat-cell:hover {
+    transform: scale(1.2);
+    z-index: 10;
+    border-color: rgba(255,255,255,0.3);
+  }
+  .heat-cell .abbr { font-size: 13px; font-weight: 800; }
+  .heat-cell .rate { font-size: 11px; opacity: 0.9; margin-top: 2px; }
+  .heat-high { background: rgba(0,229,160,0.25); color: var(--green); }
+  .heat-mid { background: rgba(255,214,0,0.15); color: var(--yellow); }
+  .heat-low { background: rgba(26,127,212,0.2); color: var(--blue-bright); }
+  .heat-lowest { background: rgba(255,68,68,0.15); color: var(--red); }
+
+  /* ─── NEWS PANEL ─── */
+  .news-panel { grid-column: 3; grid-row: 1 / 4; }
+
+  .news-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .news-item:hover { padding-left: 4px; }
+  .news-item:last-child { border-bottom: none; }
+  .news-source {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .news-fmcsa { color: var(--blue-bright); }
+  .news-dot { color: var(--orange); }
+  .news-ata { color: var(--green); }
+  .news-breaking { color: var(--red); }
+  .news-market { color: var(--yellow); }
+
+  .news-headline {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.4;
+    font-weight: 500;
+  }
+  .news-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .breaking-tag {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-right: 5px;
+    vertical-align: middle;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ─── BOTTOM STATS ─── */
+  .bottom-row {
+    grid-column: 1 / 3;
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .stat-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card:nth-child(1)::before { background: var(--blue-bright); }
+  .stat-card:nth-child(2)::before { background: var(--green); }
+  .stat-card:nth-child(3)::before { background: var(--orange); }
+  .stat-card:nth-child(4)::before { background: var(--yellow); }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 28px;
+    color: var(--text-bright);
+    line-height: 1;
+  }
+  .stat-delta {
+    font-size: 11px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .stat-sub { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+
+  /* ─── SPARKLINE ─── */
+  .sparkline { margin-top: 8px; }
+  .sparkline svg { width: 100%; height: 30px; }
+
+  /* ─── SCROLLABLE ─── */
+  .scrollable { max-height: 320px; overflow-y: auto; }
+  .scrollable::-webkit-scrollbar { width: 3px; }
+  .scrollable::-webkit-scrollbar-track { background: transparent; }
+  .scrollable::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .news-scrollable { max-height: calc(100vh - 200px); overflow-y: auto; }
+  .news-scrollable::-webkit-scrollbar { width: 3px; }
+  .news-scrollable::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* ─── GAUGE ─── */
+  .mini-gauge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .gauge-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .gauge-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  /* ─── FOOTER STATUS ─── */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    background: var(--bg2);
+    border-top: 1px solid var(--border2);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .footer-sources { display: flex; gap: 16px; }
+  .source-dot { width: 5px; height: 5px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+  /* Pulse animation for values */
+  @keyframes value-update {
+    0% { color: var(--blue-bright); }
+    100% { color: var(--text-bright); }
+  }
+  .updated { animation: value-update 1s ease; }
+
+  /* Grid glow effect */
+  .panel:hover { border-color: var(--blue-dim); box-shadow: 0 0 20px rgba(26,127,212,0.05); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo-area">
+    <img src="data:image/png;base64,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w1lbbAx8AcKm4ADhp2/VyMguPQeXPcbYOVf6eKGzaYBxuuxOZ94LnNRLPalUSwXk4DIe8VJkVEV+tNSVdW+o/SUtOHco4Dwsb7B/qsbdYambyvNT7yD/AEUcekdOD9J8uakh0YqSLy4efJX2iohutdUN5XeX3sYf6LI3Xeq28rsffBGf/FfR0jptrXeXNfD0Yqtjm+fJXmio35e6s/ev8vF8KfL3Vn71/l4vhX35jpf2u4DmvnyxV/ubxPJXkio35e6s/ev8vF8KfL3Vn71/l4vhT5jpf2u4DmnyxV/ubxPJXkuVedR2Szv4LhcYYpM47sZe8bZGWtyQPMqi7jebtcGuZXXKrqGOPEWPlJZn/l5LQWpN0kN10TOPIc1uwdFxffLJwH5PJT3UvaRX1jZaa0Q+hQPbw967eb2jBw3b2kcwVBZpJJpXyyyOkke4ue9xyXE8yT1K8Iq/U1c1S7SlderHS0cNK3RibciIi1ltIiIiIiIiIiIiIiIiIiIiIiIiL1Gx8kjY42Oe9xAa1oySTyACu7SNqo9H6XfPXytikc0TVkrwPVOAOAEcwOQG+STjnhUpS1E9LO2emnlgmZ9GSN5a4bY2I3WWuuFwr+D06uqqru88HfSufw554yduQ/gpGz62OjLpNG92zIKMtKhkrQ2PS0Wbcz794Kbax7RKmqdJR2IupqfJaanlJIMY9X7A578+XLkq/RFr1VXLVP05Tf8Ajctmko4aRmhELvU70REWstpERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERf/9k=" alt="Brummel Logo" class="logo-img" id="logoImg">
+    <div>
+      <div class="brand-name">BRUMMEL <span>FREIGHTPULSE</span></div>
+      <div class="brand-sub">Live Transportation Intelligence Platform</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div>
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="clock-date" id="date">---</div>
+    </div>
+  </div>
+</header>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-label">⚡ RATES LIVE</div>
+  <div style="overflow:hidden;flex:1">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main">
+
+  <!-- DIESEL PANEL -->
+  <div class="panel diesel-panel">
+    <div class="panel-header">
+      <div class="panel-title">⛽ Diesel Price by State</div>
+      <div class="panel-badge">$/GAL</div>
+    </div>
+    <div class="panel-body">
+      <div class="diesel-hero">
+        <div class="diesel-hero-label">Cheapest Diesel Right Now</div>
+        <div class="diesel-hero-state" id="cheapestState">TEXAS</div>
+        <div class="diesel-hero-price" id="cheapestPrice">$3.419</div>
+        <div class="diesel-hero-sub">Avg pump price · Updated live</div>
+      </div>
+      <div class="scrollable" id="dieselList"></div>
+    </div>
+  </div>
+
+  <!-- RATES PANEL -->
+  <div class="panel rates-panel">
+    <div class="panel-header">
+      <div class="panel-title">📊 DAT Spot Rates — Rate Per Mile</div>
+      <div class="panel-badge" id="rateUpdateTime">UPDATING...</div>
+    </div>
+    <div class="panel-body">
+      <div class="rate-cards">
+        <!-- REEFER -->
+        <div class="rate-card reefer">
+          <div class="rate-type">❄️ Reefer</div>
+          <div class="rate-main" id="reeferRate">$0.00</div>
+          <div class="rate-unit">per mile avg</div>
+          <div class="rate-stats">
+            <div class="rate-stat">
+              <div class="rate-stat-label">7D HIGH</div>
+              <div class="rate-stat-val up" id="reeferHigh">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">7D LOW</div>
+              <div class="rate-stat-val down" id="reeferLow">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">WK CHANGE</div>
+              <div class="rate-stat-val" id="reeferChange">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">LOAD COUNT</div>
+              <div class="rate-stat-val" id="reeferLoads">–</div>
+            </div>
+          </div>
+          <div class="best-state-row">
+            <span class="best-state-label">TOP MARKET</span>
+            <span class="best-state-val" id="reeferBest">–</span>
+          </div>
+        </div>
+        <!-- DRY VAN -->
+        <div class="rate-card dryvan">
+          <div class="rate-type">📦 Dry Van</div>
+          <div class="rate-main" id="dryvanRate">$0.00</div>
+          <div class="rate-unit">per mile avg</div>
+          <div class="rate-stats">
+            <div class="rate-stat">
+              <div class="rate-stat-label">7D HIGH</div>
+              <div class="rate-stat-val up" id="dryvanHigh">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">7D LOW</div>
+              <div class="rate-stat-val down" id="dryvanLow">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">WK CHANGE</div>
+              <div class="rate-stat-val" id="dryvanChange">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">LOAD COUNT</div>
+              <div class="rate-stat-val" id="dryvanLoads">–</div>
+            </div>
+          </div>
+          <div class="best-state-row">
+            <span class="best-state-label">TOP MARKET</span>
+            <span class="best-state-val" id="dryvanBest">–</span>
+          </div>
+        </div>
+        <!-- FLATBED -->
+        <div class="rate-card flatbed">
+          <div class="rate-type">🔩 Flatbed</div>
+          <div class="rate-main" id="flatbedRate">$0.00</div>
+          <div class="rate-unit">per mile avg</div>
+          <div class="rate-stats">
+            <div class="rate-stat">
+              <div class="rate-stat-label">7D HIGH</div>
+              <div class="rate-stat-val up" id="flatbedHigh">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">7D LOW</div>
+              <div class="rate-stat-val down" id="flatbedLow">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">WK CHANGE</div>
+              <div class="rate-stat-val" id="flatbedChange">–</div>
+            </div>
+            <div class="rate-stat">
+              <div class="rate-stat-label">LOAD COUNT</div>
+              <div class="rate-stat-val" id="flatbedLoads">–</div>
+            </div>
+          </div>
+          <div class="best-state-row">
+            <span class="best-state-label">TOP MARKET</span>
+            <span class="best-state-val" id="flatbedBest">–</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKET MAP -->
+  <div class="panel map-panel">
+    <div class="panel-header">
+      <div class="panel-title">🗺️ Rate Heat Map — Dry Van RPM by State</div>
+      <div class="panel-badge">SPOT MARKET</div>
+    </div>
+    <div class="panel-body">
+      <div style="display:flex;gap:16px;margin-bottom:8px;font-size:10px;">
+        <span style="color:var(--green)">■ HIGH (&gt;$2.80)</span>
+        <span style="color:var(--yellow)">■ MED ($2.40–2.80)</span>
+        <span style="color:var(--blue-bright)">■ LOW ($2.00–2.40)</span>
+        <span style="color:var(--red)">■ WEAK (&lt;$2.00)</span>
+      </div>
+      <div class="state-heatmap" id="heatmap"></div>
+    </div>
+  </div>
+
+  <!-- NEWS PANEL -->
+  <div class="panel news-panel">
+    <div class="panel-header">
+      <div class="panel-title">📡 Breaking News & Alerts</div>
+      <div class="panel-badge">AUTO-REFRESH</div>
+    </div>
+    <div class="panel-body" style="padding:8px 14px">
+      <div class="news-scrollable" id="newsFeed"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM STATS -->
+  <div class="bottom-row">
+    <div class="stat-card">
+      <div class="stat-label">National Avg Diesel</div>
+      <div class="stat-value" id="natDiesel">$0.000</div>
+      <div class="stat-delta" id="natDieselDelta"></div>
+      <div class="stat-sub">All 50 states average</div>
+      <div class="sparkline"><canvas id="dieselSparkline" height="30"></canvas></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Loads Posted</div>
+      <div class="stat-value" id="totalLoads">0</div>
+      <div class="stat-delta" id="loadsDelta"></div>
+      <div class="stat-sub">Last 24h on DAT board</div>
+      <div class="sparkline"><canvas id="loadsSparkline" height="30"></canvas></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Truck/Load Ratio</div>
+      <div class="stat-value" id="tlRatio">0.00</div>
+      <div class="stat-delta" id="ratioDelta"></div>
+      <div class="stat-sub">Dry Van national ratio</div>
+      <div class="mini-gauge">
+        <div class="gauge-bar"><div class="gauge-fill" id="ratioGauge" style="background:var(--blue-bright);width:0%"></div></div>
+        <span style="font-size:10px;color:var(--text-dim)" id="ratioLabel">–</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Fuel Surcharge Index</div>
+      <div class="stat-value" id="fuelSurcharge">0.0%</div>
+      <div class="stat-delta" id="surchargeDelta"></div>
+      <div class="stat-sub">EIA weekly FSC rate</div>
+      <div class="sparkline"><canvas id="surchargeSparkline" height="30"></canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-sources">
+    <span><span class="source-dot" style="background:var(--blue-bright)"></span>DAT Freight & Analytics</span>
+    <span><span class="source-dot" style="background:var(--green)"></span>EIA Diesel Survey</span>
+    <span><span class="source-dot" style="background:var(--orange)"></span>FMCSA Safety Data</span>
+    <span><span class="source-dot" style="background:var(--yellow)"></span>DOT Press Releases</span>
+    <span><span class="source-dot" style="background:var(--red)"></span>ATA Tonnage Index</span>
+  </div>
+  <div id="lastUpdate">Last updated: –</div>
+</div>
+
+<script>
+// ── DATA INITIALIZATION ──────────────────────────────────────────────
+const dieselStates = [
+  {code:'TX',name:'Texas',price:3.419},
+  {code:'OK',name:'Oklahoma',price:3.438},
+  {code:'MS',name:'Mississippi',price:3.452},
+  {code:'AR',name:'Arkansas',price:3.461},
+  {code:'LA',name:'Louisiana',price:3.479},
+  {code:'TN',name:'Tennessee',price:3.491},
+  {code:'MO',name:'Missouri',price:3.505},
+  {code:'KS',name:'Kansas',price:3.518},
+  {code:'NE',name:'Nebraska',price:3.527},
+  {code:'AL',name:'Alabama',price:3.533},
+  {code:'SC',name:'S Carolina',price:3.548},
+  {code:'GA',name:'Georgia',price:3.562},
+  {code:'IN',name:'Indiana',price:3.571},
+  {code:'KY',name:'Kentucky',price:3.585},
+  {code:'OH',name:'Ohio',price:3.594},
+  {code:'VA',name:'Virginia',price:3.608},
+  {code:'NC',name:'N Carolina',price:3.617},
+  {code:'FL',name:'Florida',price:3.629},
+  {code:'MI',name:'Michigan',price:3.641},
+  {code:'WI',name:'Wisconsin',price:3.655},
+  {code:'MN',name:'Minnesota',price:3.668},
+  {code:'IA',name:'Iowa',price:3.674},
+  {code:'IL',name:'Illinois',price:3.689},
+  {code:'PA',name:'Pennsylvania',price:3.701},
+  {code:'NY',name:'New York',price:3.718},
+  {code:'NJ',name:'New Jersey',price:3.729},
+  {code:'CT',name:'Connecticut',price:3.745},
+  {code:'MA',name:'Massachusetts',price:3.758},
+  {code:'CA',name:'California',price:4.189},
+  {code:'WA',name:'Washington',price:4.221},
+];
+
+const heatStates = [
+  {abbr:'WA',rate:2.31},{abbr:'OR',rate:2.28},{abbr:'CA',rate:2.19},{abbr:'NV',rate:2.44},
+  {abbr:'ID',rate:2.52},{abbr:'MT',rate:2.61},{abbr:'WY',rate:2.48},{abbr:'UT',rate:2.55},
+  {abbr:'CO',rate:2.71},{abbr:'AZ',rate:2.38},
+  {abbr:'ND',rate:2.58},{abbr:'SD',rate:2.54},{abbr:'NE',rate:2.49},{abbr:'KS',rate:2.62},
+  {abbr:'OK',rate:2.79},{abbr:'TX',rate:2.89},{abbr:'NM',rate:2.41},{abbr:'MN',rate:2.65},
+  {abbr:'IA',rate:2.68},{abbr:'MO',rate:2.77},
+  {abbr:'WI',rate:2.61},{abbr:'IL',rate:2.74},{abbr:'IN',rate:2.83},{abbr:'MI',rate:2.72},
+  {abbr:'OH',rate:2.88},{abbr:'KY',rate:2.91},{abbr:'TN',rate:2.95},{abbr:'AR',rate:2.81},
+  {abbr:'LA',rate:2.87},{abbr:'MS',rate:2.84},
+  {abbr:'AL',rate:2.92},{abbr:'GA',rate:2.98},{abbr:'FL',rate:2.85},{abbr:'SC',rate:2.96},
+  {abbr:'NC',rate:2.93},{abbr:'VA',rate:2.88},{abbr:'WV',rate:2.79},{abbr:'PA',rate:2.81},
+  {abbr:'NY',rate:2.71},{abbr:'NJ',rate:2.69},
+  {abbr:'ME',rate:2.58},{abbr:'NH',rate:2.62},{abbr:'VT',rate:2.55},{abbr:'MA',rate:2.64},
+  {abbr:'RI',rate:2.59},{abbr:'CT',rate:2.67},{abbr:'DE',rate:2.72},{abbr:'MD',rate:2.76},
+  {abbr:'DC',rate:2.68},{abbr:'AK',rate:1.89},
+];
+
+let rates = {
+  reefer:  {current:3.21, high:3.45, low:3.05, change:+0.08, loads:48200, best:'Chicago, IL'},
+  dryvan:  {current:2.84, high:3.02, low:2.71, change:-0.03, loads:91500, best:'Atlanta, GA'},
+  flatbed: {current:3.05, high:3.28, low:2.89, change:+0.12, loads:31800, best:'Houston, TX'},
+};
+
+const newsItems = [
+  {source:'BREAKING',type:'breaking',time:'2 min ago',headline:'FMCSA proposes new HOS exemption for agricultural haulers during harvest season — comment period open until April 15'},
+  {source:'FMCSA',type:'fmcsa',time:'18 min ago',headline:'Agency issues updated Drug & Alcohol Clearinghouse guidance; 1,200+ new violations recorded this week'},
+  {source:'DOT',type:'dot',time:'41 min ago',headline:'USDOT announces $2.4B infrastructure grant for freight corridor improvements along I-40 and I-10 corridors'},
+  {source:'MARKET',type:'market',time:'1 hr ago',headline:'Reefer rates surge +8.3% WoW as produce season ramps up across Southeast — demand exceeding available capacity'},
+  {source:'ATA',type:'ata',time:'1.5 hr ago',headline:'American Trucking Associations reports tonnage index up 2.1% in February — strongest gain since Q3 last year'},
+  {source:'FMCSA',type:'fmcsa',time:'2 hr ago',headline:'Automated driving system (ADS) safety reporting framework finalized; mandatory reporting begins Q3 2026'},
+  {source:'DOT',type:'dot',time:'2.5 hr ago',headline:'Federal Motor Carrier Safety Administration launches new CSA score appeal portal — carriers can contest violations online'},
+  {source:'BREAKING',type:'breaking',time:'3 hr ago',headline:'Truck stop fuel theft ring busted in 8 states — 47 cards compromised; FMCSA warns carriers to audit fuel cards'},
+  {source:'MARKET',type:'market',time:'3.5 hr ago',headline:'Flatbed capacity tightens in Gulf Coast region as industrial demand rises; RPM up $0.12 in 5 days'},
+  {source:'ATA',type:'ata',time:'4 hr ago',headline:'Driver shortage reaches 78,000 units — ATA urges Congress to expand CDL apprenticeship training funding'},
+  {source:'FMCSA',type:'fmcsa',time:'5 hr ago',headline:'New ELD technical specifications published; all devices must comply with Rev. 3 by December 2026'},
+  {source:'DOT',type:'dot',time:'6 hr ago',headline:'Bridge weight limit changes take effect on 230 US routes — LTL and bulk carriers advised to reroute'},
+  {source:'MARKET',type:'market',time:'7 hr ago',headline:'Diesel prices dip for third consecutive week — national average falls $0.04 to $3.647/gallon per EIA data'},
+  {source:'ATA',type:'ata',time:'8 hr ago',headline:'Congestion index at major ports improves: LA/Long Beach dwell times down 18% compared to March 2025'},
+  {source:'FMCSA',type:'fmcsa',time:'9 hr ago',headline:'Safety fitness determination rule update published — carriers with CSA score above 75 face enhanced roadside scrutiny'},
+];
+
+// ── CLOCK ────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-US', {hour12:false, hour:'2-digit', minute:'2-digit', second:'2-digit'}) + ' ET';
+  document.getElementById('date').textContent =
+    now.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'}).toUpperCase();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── DIESEL LIST ──────────────────────────────────────────────────────
+function renderDiesel() {
+  const sorted = [...dieselStates].sort((a,b) => a.price - b.price);
+  const cheapest = sorted[0];
+  document.getElementById('cheapestState').textContent = cheapest.name.toUpperCase();
+  document.getElementById('cheapestPrice').textContent = `$${cheapest.price.toFixed(3)}`;
+
+  let html = '';
+  sorted.forEach((s, i) => {
+    const chg = (Math.random() * 0.04 - 0.02).toFixed(3);
+    const chgClass = parseFloat(chg) >= 0 ? 'up' : 'down';
+    const arrow = parseFloat(chg) >= 0 ? '▲' : '▼';
+    html += `<div class="state-row">
+      <span class="state-code">${s.code}</span>
+      <span class="state-name">${s.name}${i===0?'<span class="cheapest-badge">LOW</span>':''}</span>
+      <span class="state-price">$${s.price.toFixed(3)}</span>
+      <span class="state-change ${chgClass}">${arrow}${Math.abs(chg)}</span>
+    </div>`;
+  });
+  document.getElementById('dieselList').innerHTML = html;
+}
+
+// ── RATES ────────────────────────────────────────────────────────────
+function renderRates() {
+  const types = ['reefer','dryvan','flatbed'];
+  const now = new Date();
+  document.getElementById('rateUpdateTime').textContent = `UPDATED ${now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}`;
+
+  types.forEach(t => {
+    const r = rates[t];
+    const el = document.getElementById(`${t}Rate`);
+    el.textContent = `$${r.current.toFixed(2)}`;
+    el.classList.add('updated');
+    setTimeout(() => el.classList.remove('updated'), 1000);
+
+    document.getElementById(`${t}High`).textContent = `$${r.high.toFixed(2)}`;
+    document.getElementById(`${t}Low`).textContent  = `$${r.low.toFixed(2)}`;
+    const chgEl = document.getElementById(`${t}Change`);
+    chgEl.textContent = `${r.change >= 0 ? '+' : ''}$${r.change.toFixed(2)}`;
+    chgEl.className = `rate-stat-val ${r.change >= 0 ? 'up' : 'down'}`;
+    document.getElementById(`${t}Loads`).textContent = (r.loads/1000).toFixed(1) + 'K';
+    document.getElementById(`${t}Best`).textContent = r.best;
+  });
+}
+
+// ── HEATMAP ──────────────────────────────────────────────────────────
+function renderHeatmap() {
+  let html = '';
+  heatStates.forEach(s => {
+    let cls = 'heat-low';
+    if (s.rate >= 2.80) cls = 'heat-high';
+    else if (s.rate >= 2.40) cls = 'heat-mid';
+    else if (s.rate < 2.00) cls = 'heat-lowest';
+    html += `<div class="heat-cell ${cls}" title="${s.abbr}: $${s.rate.toFixed(2)}/mi">
+      <span class="abbr">${s.abbr}</span>
+      <span class="rate">$${s.rate.toFixed(2)}</span>
+    </div>`;
+  });
+  document.getElementById('heatmap').innerHTML = html;
+}
+
+// ── NEWS FEED ────────────────────────────────────────────────────────
+function renderNews() {
+  const typeMap = {
+    breaking: 'news-breaking',
+    fmcsa: 'news-fmcsa',
+    dot: 'news-dot',
+    ata: 'news-ata',
+    market: 'news-market',
+  };
+  let html = '';
+  newsItems.forEach(n => {
+    const breakTag = n.type === 'breaking' ? '<span class="breaking-tag">BREAKING</span>' : '';
+    html += `<div class="news-item">
+      <div class="news-source ${typeMap[n.type]}">${n.source}</div>
+      <div class="news-headline">${breakTag}${n.headline}</div>
+      <div class="news-time">${n.time}</div>
+    </div>`;
+  });
+  document.getElementById('newsFeed').innerHTML = html;
+}
+
+// ── BOTTOM STATS ─────────────────────────────────────────────────────
+let natAvgDiesel = 3.647;
+let totalLoads = 171500;
+let tlRatio = 3.82;
+let fuelSurcharge = 23.5;
+
+function renderBottomStats() {
+  document.getElementById('natDiesel').textContent = `$${natAvgDiesel.toFixed(3)}`;
+  document.getElementById('natDieselDelta').innerHTML = `<span class="down" style="color:var(--green)">▼ $0.041 vs last week</span>`;
+
+  document.getElementById('totalLoads').textContent = (totalLoads/1000).toFixed(1) + 'K';
+  document.getElementById('loadsDelta').innerHTML = `<span style="color:var(--green)">▲ +3.2% vs yesterday</span>`;
+
+  document.getElementById('tlRatio').textContent = tlRatio.toFixed(2);
+  document.getElementById('ratioDelta').innerHTML = `<span style="color:var(--orange)">▶ Balanced market</span>`;
+  document.getElementById('ratioGauge').style.width = Math.min((tlRatio/8)*100, 100) + '%';
+  document.getElementById('ratioLabel').textContent = tlRatio < 3 ? 'TIGHT' : tlRatio > 5 ? 'LOOSE' : 'BALANCED';
+
+  document.getElementById('fuelSurcharge').textContent = fuelSurcharge.toFixed(1) + '%';
+  document.getElementById('surchargeDelta').innerHTML = `<span style="color:var(--green)">▼ -0.5% vs last week</span>`;
+}
+
+// ── TICKER ───────────────────────────────────────────────────────────
+function buildTicker() {
+  const items = [
+    ...dieselStates.slice(0,8).map(s => `<span class="ticker-item"><span class="label">${s.code} DIESEL</span> <span class="val">$${s.price.toFixed(3)}</span></span><span class="ticker-sep">|</span>`),
+    `<span class="ticker-item"><span class="label">REEFER</span> <span class="val up">$${rates.reefer.current.toFixed(2)}/mi</span></span><span class="ticker-sep">|</span>`,
+    `<span class="ticker-item"><span class="label">DRY VAN</span> <span class="val">$${rates.dryvan.current.toFixed(2)}/mi</span></span><span class="ticker-sep">|</span>`,
+    `<span class="ticker-item"><span class="label">FLATBED</span> <span class="val up">$${rates.flatbed.current.toFixed(2)}/mi</span></span><span class="ticker-sep">|</span>`,
+    `<span class="ticker-item"><span class="label">NAT DIESEL AVG</span> <span class="val down">$${natAvgDiesel.toFixed(3)}</span></span><span class="ticker-sep">|</span>`,
+    `<span class="ticker-item"><span class="label">LOADS POSTED</span> <span class="val">${(totalLoads/1000).toFixed(1)}K</span></span><span class="ticker-sep">|</span>`,
+    `<span class="ticker-item"><span class="label">T/L RATIO</span> <span class="val">${tlRatio.toFixed(2)}</span></span><span class="ticker-sep">|</span>`,
+    `<span class="ticker-item"><span class="label">FUEL SURCHARGE</span> <span class="val">${fuelSurcharge.toFixed(1)}%</span></span><span class="ticker-sep">|</span>`,
+    `<span class="ticker-item"><span class="label">⚠ FMCSA</span> <span class="val" style="color:var(--orange)">New HOS Exemption Proposed</span></span><span class="ticker-sep">|</span>`,
+    `<span class="ticker-item"><span class="label">DOT ALERT</span> <span class="val" style="color:var(--yellow)">Bridge weight changes active</span></span><span class="ticker-sep">|</span>`,
+  ];
+  const full = items.join('') + items.join(''); // double for seamless loop
+  document.getElementById('tickerTrack').innerHTML = full;
+}
+
+// ── AUTO-UPDATE SIMULATION ───────────────────────────────────────────
+function flicker(val, amplitude, decimals=3) {
+  return parseFloat((val + (Math.random()-0.5)*amplitude*2).toFixed(decimals));
+}
+
+function updateData() {
+  // Diesel fluctuation
+  dieselStates.forEach(s => {
+    s.price = Math.max(3.20, Math.min(4.50, flicker(s.price, 0.008)));
+  });
+
+  // Rate fluctuation
+  ['reefer','dryvan','flatbed'].forEach(t => {
+    rates[t].current = Math.max(1.8, Math.min(4.5, flicker(rates[t].current, 0.015, 2)));
+    rates[t].change = parseFloat((rates[t].change + (Math.random()-0.5)*0.02).toFixed(2));
+    rates[t].loads += Math.round((Math.random()-0.45)*300);
+  });
+
+  // Macro stats
+  natAvgDiesel = Math.max(3.3, Math.min(4.2, flicker(natAvgDiesel, 0.005)));
+  totalLoads += Math.round((Math.random()-0.45)*800);
+  tlRatio = Math.max(1.5, Math.min(8, flicker(tlRatio, 0.04, 2)));
+  fuelSurcharge = Math.max(15, Math.min(35, flicker(fuelSurcharge, 0.1, 1)));
+
+  // Heat map
+  heatStates.forEach(s => {
+    s.rate = Math.max(1.5, Math.min(3.5, flicker(s.rate, 0.02, 2)));
+  });
+
+  // Render all
+  renderDiesel();
+  renderRates();
+  renderHeatmap();
+  renderBottomStats();
+  buildTicker();
+
+  document.getElementById('lastUpdate').textContent =
+    'Last updated: ' + new Date().toLocaleTimeString('en-US', {hour12:false});
+}
+
+// ── SPARKLINES (canvas) ──────────────────────────────────────────────
+function drawSparkline(canvasId, data, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth || 200;
+  canvas.height = 30;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const w = canvas.width;
+  const h = canvas.height;
+  const xStep = w / (data.length - 1);
+  ctx.beginPath();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  data.forEach((v, i) => {
+    const x = i * xStep;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  // fill
+  ctx.lineTo(w, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  ctx.fillStyle = color.replace(')', ',0.1)').replace('rgb','rgba');
+  ctx.fill();
+}
+
+const dieselHistory  = Array.from({length:20}, (_,i) => 3.65 + Math.sin(i*0.4)*0.08 + Math.random()*0.02);
+const loadsHistory   = Array.from({length:20}, (_,i) => 165000 + Math.sin(i*0.5)*8000 + Math.random()*2000);
+const surchargeHist  = Array.from({length:20}, (_,i) => 23 + Math.sin(i*0.3)*2 + Math.random()*0.5);
+
+function drawAll() {
+  drawSparkline('dieselSparkline',   dieselHistory,  '#2d9cff');
+  drawSparkline('loadsSparkline',    loadsHistory.map(v=>v/1000), '#00e5a0');
+  drawSparkline('surchargeSparkline',surchargeHist,  '#ffd600');
+}
+
+// ── LOGO EMBED ───────────────────────────────────────────────────────
+// Convert logo to data URL for offline embedding
+const logoImg = document.getElementById('logoImg');
+logoImg.onerror = () => {
+  // Fallback: text logo if image not found
+  logoImg.style.display = 'none';
+};
+
+// ── INIT ─────────────────────────────────────────────────────────────
+renderDiesel();
+renderRates();
+renderHeatmap();
+renderNews();
+renderBottomStats();
+buildTicker();
+setTimeout(drawAll, 100);
+
+// Auto-update every 8 seconds
+setInterval(updateData, 8000);
+
+// Redraw sparklines on resize
+window.addEventListener('resize', drawAll);
+</script>
+</body>
+</html>
