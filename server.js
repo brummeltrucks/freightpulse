@@ -6,7 +6,7 @@ const app  = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Keys (set as env vars on Render) ─────────────────────────────────
-const GEMINI_KEY = process.env.GEMINI_KEY || 'AIzaSyAmbYYXK7USu-TqvAtrQeRxMlJuYxHUb_c';
+const GEMINI_KEY = process.env.GEMINI_KEY || 'AIzaSyDhXgejCcrZkHJr2DWMHCdTUAaDBFBuVZY';
 const EIA_KEY    = process.env.EIA_KEY    || 'DEMO_KEY';
 
 app.use(express.json());
